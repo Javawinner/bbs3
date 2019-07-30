@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/blog/bs/css/bootstrap.css">
+    <script src="/static/blog/bs/js/bootstrap.js"></script>
+
+
+</head>
+<body style="background-color: #cccccc">
+<h3 class="text-info text-center">登录页面</h3>
+<div class="container" style="margin-top: 26px">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="user">用户名</label>
+                    <input type="text" id="user" class="form-control" placeholder="用户名">
+                </div>
+                <div class="form-group">
+                    <label for="pwd">密码</label>
+                    <input type="password" id="pwd" class="form-control" placeholder="密码">
+                </div>
+                <div>
+                    <label for="">验证码</label>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" id="valid_code" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <img width="260" height="35" src="/get_valid_img/" id="valid_code_img" alt="">
+                    </div>
+                </div>
+                <input type="button" class="btn btn-primary login_btn btn-group-justified" style="" value="登录">
+                <span class="error h4 pull-left" style="margin-top: 10px"></span>
+                <a href="/register/" class="pull-right h4" style="color: rebeccapurple">注册</a>
+            </form>
+
+
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    $('#valid_code_img').click(function () {
+        $(this)[0].src += '?'
+    });
+
+    $('.login_btn').click(function () {
+        $.ajax({
+            url: '',
+            type: 'post',
+            data: {
+                user: $('#user').val(),
+                pwd: $('#pwd').val(),
+                valid_code: $('#valid_code').val(),
+                csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+            },
+            success: function (data) {
+                if (data.status) {
+                    location.href = '/index/'
+                } else {
+                    $('.login_btn').next().html(data.msg).css({"color": "red"});
+                }
+                setTimeout(function () {
+                    $('.error').html('')
+                }, 1000)
+            }
+        })
+    })
+</script>
+</html>

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="col-md-3">
+        {% load mytags %}
+        {% get_classification_style username %}
+    </div>
+    <div class="col-md-9">
+        {% for article in article_list %}
+            <div class="media">
+                <div class="media-left">
+                    <a href="#">
+                        <img class="media-object" src="/media/{{ article.blog.userinfo.avatar }}" alt="..." width="60">
+                    </a>
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading"><a
+                            href="/{{ username }}/articles/{{ article.pk }}">{{ article.title }}</a></h4>
+                    <p>{{ article.desc }}</p>
+                    <div class="pull-right">
+                        <span>posted @&nbsp;{{ article.create_time|date:"Y-m-d h:m:s" }}&nbsp;</span>
+                        <span>{{ article.blog.userinfo.username }}&nbsp;</span>
+                        <span>评论({{ article.comment_count }})&nbsp;</span>
+                        <span>点赞({{ article.down_count }})</span>
+                        <span><a href="">编辑</a></span>
+                    </div>
+                </div>
+            </div>
+            <hr>
+        {% endfor %}
+    </div>
+
+{% endblock %}

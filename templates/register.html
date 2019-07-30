@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <link rel="stylesheet" href="/static/blog/bs/css/bootstrap.css">
+    <script src="/static/blog/bs/js/bootstrap.js"></script>
+</head>
+<body style="background-color: #cccccc">
+<h2 class="text-primary text-center panel-body">注册页面</h2>
+<div class="container" style="margin-top: 26px">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form id="form">
+                {% csrf_token %}
+                {% for foo in form %}
+                    <div class="form form-group">
+                        <label for="{{ foo.auto_id }}">{{ foo.label }}</label>
+                        {{ foo }} <span class="pull-right error"></span>
+                    </div>
+                {% endfor %}
+
+                <div class="form-group">
+                    <label for="avatar">头像
+                        <img src="/static/blog/images/default.jpg" id="avatar_img" alt="" width="50px">
+                    </label>
+                    <input type="file" id="avatar" class="hidden">
+                </div>
+
+            </form>
+            <input type="button" class="btn btn-primary btn-group-justified reg_btn" value="注册">
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    $('.reg_btn').click(function () {
+        //console.log($('#form').serializeArray().val());
+        var formdata = new FormData();
+        var request_data = $('#form').serializeArray();
+
+        $.each(request_data, function (index, data) {
+            formdata.append(data.name, data.value);
+        });
+
+        //$.each(request_data, function (index, data) {
+
+        //  formdata.append(data.name, data.value)
+        //});
+
+        // 加入图片对象
+        formdata.append('file_obj', $('#avatar')[0].files[0]);
+        //File {name: "1P512151355-2.jpg",
+        // lastModified: 1564212672633,
+        // lastModifiedDate: Sat Jul 27 2019 15:31:12 GMT+0800 (中国标准时间),
+        // webkitRelativePath: "", size: 365545, …}
+
+
+        $.ajax({
+            url: '',
+            type: 'post',
+            data: formdata,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                console.log(data.status);
+                if (data.status) {
+                    //跳转到登录界面
+                    location.href = '/login/';
+                } else {
+                    //如果注册不能够，在按钮旁边显示报错信息
+
+                    // $('.error').html(data.msg);
+                    $.each(data.msg, function (index, error_list) {
+                        // 根据form表单自动生成id的规律拼出id，并在其下一个标签添加错误信息
+                        tag_id = '#id_' + index;
+                        $(tag_id).next().html(error_list[0]).css({'color': 'red'}).parent().addClass('has-error')
+                    });
+
+                    $('input').focus(function () {
+                        $(this).next().text('').parent().removeClass('has-error')
+                    })
+                }
+            }
+        })
+    })
+</script>
+
+<script>
+    // 使得图片能够在前台显示缩略图
+    //获取文件对象的路径
+    $('#avatar').change(function () {
+        //获取用户选中的文件对象
+        var file_obj = $(this)[0].files[0];
+        //使用文件阅读器读取文件
+        var reader = new FileReader(); // 定义阅读器
+        reader.readAsDataURL(file_obj) //读取文件对象的路径
+        //reader.result  最后的结果保存在result方法中
+        //修改img的src属性
+        // reader.onload表示当执行完reader的代码再执行onload方法中定义的代码
+        reader.onload = function () {
+            $('#avatar_img').attr("src", reader.result)
+        }
+    })
+</script>
+</html>

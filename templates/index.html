@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/blog/bs/css/bootstrap.css">
+    <script src="/static/blog/bs/js/bootstrap.js"></script>
+</head>
+<body>
+{#<h2>hi, {{ request.user }}</h2>#}
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">博客园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">文章 <span class="sr-only">(current)</span></a></li>
+                <li><a href="#">随笔</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% if request.user.is_authenticated %}
+                    <li><a href="#">{{ request.user.username }}</a></li>
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">更多操作 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                    <li><a href="/set_password/">修改密码</a></li>
+                    <li><a href="#">修改头像</a></li>
+                    <li><a href="/backend/">后台管理</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="/logout/">注销</a></li>
+                {% else %}
+                    <li><a href="/login/">登录</a></li>
+                    <li><a href="/register/">注册</a></li>
+                {% endif %}
+                </ul>
+                </li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章分类</h3>
+                </div>
+                <div class="panel-body">
+                     {% for category in category_list %}
+                    <p><a href="/{{ category.3 }}/category/{{ category.2 }}">{{ category.0 }}</a>&nbsp;({{ category.1 }})</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章标签</h3>
+                </div>
+                <div class="panel-body">
+                    {% for tag in tag_list %}
+                    <p><a href="/{{ tag.3 }}/tag/{{ tag.2 }}">{{ tag.0 }}</a>&nbsp;({{ tag.1 }})</p>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            {% for article in article_list %}
+                <div class="media">
+                    <div class="media-left">
+                        <a href="">
+                            <img class="media-object" src="/media/{{ article.blog.userinfo.avatar }}" alt="..."
+                                 width="60">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading"><a
+                                href="/{{ article.blog.userinfo.username }}/articles/{{ article.pk }}">{{ article.title }}</a>
+                        </h4>
+                        <p>{{ article.desc }}</p>
+                    </div>
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

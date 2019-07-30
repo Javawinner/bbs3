@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block css %}
+    <style>
+        #div_digg {
+            float: right;
+            margin-bottom: 10px;
+            margin-right: 30px;
+            font-size: 12px;
+            width: 125px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .diggit {
+            float: left;
+            width: 46px;
+            height: 52px;
+            background: url("/static/blog/images/upup.gif") no-repeat;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 2px;
+            padding-top: 5px;
+        }
+
+        .buryit {
+            float: right;
+            margin-left: 20px;
+            width: 46px;
+            height: 52px;
+            background: url('/static/blog/images/downdown.gif') no-repeat;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 2px;
+            padding-top: 5px;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .diggword {
+            margin-top: 5px;
+            margin-left: 0;
+            font-size: 12px;
+            color: gray;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    {% if article_obj.blog.userinfo.username == username %}
+        <div class="col-md-3">
+            {% load mytags %}
+            {% get_classification_style username %}
+
+        </div>
+        <div class="col-md-9">
+        <div class="clearfix">
+            {% csrf_token %}
+            <h1 class="h1">{{ article_obj.title }}</h1>
+            {{ article_obj.content|safe }}
+            {#    点赞点踩样式 开始#}
+            <div>
+                <div id="div_digg">
+                    <div class="diggit action">
+                        <span class="diggnum" id="digg_count">{{ article_obj.up_count }}</span>
+                    </div>
+                    <div class="buryit action">
+                        <span class="burynum" id="bury_count">{{ article_obj.down_count }}</span>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="diggword" id="digg_tips" style="color: red;"></div>
+                </div>
+            </div>
+        </div>
+        {#    点赞点踩样式 结束#}
+        {# 评论楼样式开始 #}
+        <br>
+        <h4 class="h4" style="padding-bottom: 7px">评论列表</h4>
+        {% for comment in comment_list %}
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <div>
+                        <span style="color: #399ab2;">#&nbsp;</span>
+                        <span style="color: #399ab2;">{{ forloop.counter }}&nbsp;</span>
+                        <span style="color: #399ab2;">楼&nbsp;</span>
+                        <span>{{ comment.create_time |date:'Y-m-d h:m:s' }}</span>
+                        <span><a
+                                href="/{{ article_obj.blog.userinfo.username }}/">{{ article_obj.blog.userinfo.username }}</a></span>
+                        <span class="glyphicon glyphicon-envelope"></span>
+                        <span><a class="pull-right reply" username="{{ article_obj.blog.userinfo.username }}"
+                                 comment_id="{{ comment.pk }}">回复</a></span>
+                    </div>
+                    <br>
+                    <div>
+                        {% if comment.parent_comment_id %}
+                            <a href="#" style="color: red;">@</a>&nbsp;
+                            <span>{{ article_obj.blog.userinfo.username }}</span>&nbsp;
+                            <p>{{ comment.content }}</p>
+                        {% else %}
+                            <p>{{ comment.content }}</p>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+
+        {% endfor %}
+        {# 评论楼样式结束 #}
+        {# 评论样式 开始#}
+        <hr>
+        <div class="" style="padding-bottom: 7px"><span class="glyphicon glyphicon-comment"></span>&nbsp;发表评论</div>
+        <p>
+            <span class="
+glyphicon glyphicon-user"></span>&nbsp;昵称：<input type="text" id="tbCommentAuthor" class="author glyphicon-baby-formula"
+                                                 disabled="disabled"
+                                                 size="75" value="{{ request.user.username }}">
+        </p>
+        <p>评论内容：</p>
+        <textarea name="" id="id_comment" cols="81" rows="10"></textarea>
+        {% if '#id' %}
+
+        {% endif %}
+        <p>
+            <button type="button" class="btn btn-primary" id="id_submit">提交评论</button>
+        </p>
+        {#    评论样式 结束#}
+        {% else %}
+        <meta http-equiv="refresh" content="1; url='/1111/'"/>
+        <h2 class="h2" style="color: red; text-align: center">傻叉，没有该文章</h2>
+    {% endif %}
+
+</div>
+    <script>
+        // 点赞点踩逻辑代码
+        $('#div_digg .action').click(function () {
+            var is_up = $(this).hasClass('diggit');
+            var spanEle = $(this).children();
+            $.ajax({
+                url: "/digg/",
+                type: 'post',
+                data: {
+                    'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val(),
+                    'is_up': is_up,
+                    'article_id': "{{ article_obj.pk }}",
+                },
+                success: function (data) {
+                    if (data.state) {
+                        spanEle.text(Number(spanEle.text()) + 1);
+                        console.log(data.msg);
+                        $('#digg_tips').text(data.msg);
+                    } else {
+                        console.log(data.msg);
+                        $('#digg_tips').text(data.msg);
+                    }
+                    setTimeout(function () {
+                        $('#digg_tips').text('')
+                    }, 1000)
+
+                }
+            })
+        })
+    </script>
+    <script>
+        // 评论逻辑代码
+        // 定义一个全局的parent_id字段
+        var parent_id = null;
+        $('#id_submit').click(function () {
+            var comment = '';
+            if (parent_id) {
+                var comment = $('#id_comment').val().split('\n')[1]
+            } else {
+                var comment = $('#id_comment').val();
+            }
+            $.ajax({
+                url: '/comment/',
+                type: 'post',
+                data: {
+                    'parent_id': parent_id,
+                    'comment': comment,
+                    'article_id':{{ article_obj.pk }},
+                    'csrfmiddlewaretoken': $("[name='csrfmiddlewaretoken']").val()
+                },
+                success: function (data) {
+                    console.log(data.state);
+                    if (data.state) {
+                        var username = '{{ request.user.username }}';
+                        var comment = $('#id_comment').val();
+                        var tempStr = `
+                      <li class="list-group-item">
+                         <div>
+                               <span><b>${username}</b></span>
+                          </div>
+                            <br>
+                        <div> ${comment}</div>
+                     </li>
+                    `;
+                        $('.list-group').append(tempStr);
+
+                        // 当提交评论的时候，讲评论框里的值清空
+                        $('#id_comment').val('');
+                        parent_id = null;
+                    }
+                }
+            })
+        });
+
+        // 点击回复按钮
+        $('.reply').click(function () {
+            //获取当前回复按钮所对应的根评论的用户名
+            var username = $(this).attr('username');
+            //找到textarea标签，将@用户名，自动换行，自动聚焦显示处理
+            $('#id_comment').html('@' + username + '\n').focus();
+            parent_id = $(this).attr('comment_id');
+        })
+    </script>
+{% endblock %}
